@@ -82,6 +82,62 @@ int main(int argc, char *argv[]) {
 ## 2.To Write a C program that illustrates files locking
 
 ```
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main()
+{
+    int fd;
+    struct flock lock;
+
+    fd = open("lockfile.txt", O_RDWR | O_CREAT, 0644);
+
+    if (fd == -1)
+    {
+        perror("Error opening file");
+        return 1;
+    }
+
+    lock.l_type = F_WRLCK;
+    lock.l_whence = SEEK_SET;
+    lock.l_start = 0;
+    lock.l_len = 0;
+    lock.l_pid = getpid();
+
+    printf("Trying to acquire file lock...\n");
+
+    if (fcntl(fd, F_SETLKW, &lock) == -1)
+    {
+        perror("Error locking file");
+        close(fd);
+        return 1;
+    }
+
+    printf("File locked successfully.\n");
+    printf("Process ID: %d\n", getpid());
+    printf("File is locked for 10 seconds...\n");
+
+    write(fd, "File is locked by this process.\n", 32);
+
+    sleep(10);
+
+    lock.l_type = F_UNLCK;
+
+    if (fcntl(fd, F_SETLK, &lock) == -1)
+    {
+        perror("Error unlocking file");
+        close(fd);
+        return 1;
+    }
+
+    printf("File unlocked successfully.\n");
+
+    close(fd);
+
+    return 0;
+}
 
 
 ```
@@ -89,8 +145,9 @@ int main(int argc, char *argv[]) {
 
 ## OUTPUT
 
-<img width="368" height="408" alt="image" src="https://github.com/user-attachments/assets/22ebb368-e888-44a0-aa9b-3c873c43037f" />
+<img width="348" height="403" alt="image" src="https://github.com/user-attachments/assets/bd70381f-dbe5-4cf1-b5da-618a7ae4e3fa" />
 
+<img width="373" height="272" alt="image" src="https://github.com/user-attachments/assets/b139e0bd-8055-45c8-a409-9c3dcd957c33" />
 
 
 
